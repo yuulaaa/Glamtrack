@@ -1,0 +1,68 @@
+.expiry-progress {
+  margin: 20px 0;
+}
+
+.expiry-progress__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.expiry-progress__label {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.expiry-progress__days {
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+.expiry-progress__days--good {
+  color: #27ae60;
+}
+
+.expiry-progress__days--caution {
+  color: #d4a017;
+}
+
+.expiry-progress__days--warning {
+  color: #e67e22;
+}
+
+.expiry-progress__days--expired {
+  color: #e74c3c;
+}
+
+.expiry-progress__track {
+  height: 8px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.expiry-progress__fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+}
+
+.expiry-progress__fill--good {
+  background: linear-gradient(90deg, #2ecc71, #27ae60);
+}
+
+.expiry-progress__fill--caution {
+  background: linear-gradient(90deg, #f1c40f, #d4a017);
+}
+
+.expiry-progress__fill--warning {
+  background: linear-gradient(90deg, #f39c12, #e67e22);
+}
+
+.expiry-progress__fill--expired {
+  background: linear-gradient(90deg, #e74c3c, #c0392b);
+  width: 100% !important;
+}
