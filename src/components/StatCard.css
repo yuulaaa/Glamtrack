@@ -1,4 +1,5 @@
 .stat-card {
+  position: relative;
   background: var(--color-bg);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -6,6 +7,22 @@
   text-align: center;
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+}
+
+/* 3×3 dot grid texture in top-right corner */
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 17px;
+  height: 17px;
+  background-image: radial-gradient(circle, #d9d9d9 1.5px, transparent 1.5px);
+  background-size: 7px 7px;
+  background-repeat: repeat;
+  pointer-events: none;
+  opacity: 0.7;
 }
 
 .stat-card__value {
@@ -19,15 +36,16 @@
 
 .stat-card__label {
   display: block;
+  font-family: var(--font-body);
   font-size: 0.6875rem;
   color: var(--color-text-muted);
   margin-top: 6px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 }
 
 .stat-card--warning .stat-card__value {
-  color: #e67e22;
+  color: #d4651a;
 }
 
 .stat-card--accent .stat-card__value {

@@ -28,8 +28,8 @@ html {
 }
 
 body {
-  font-family: var(--font-body);
-  font-weight: 300;
+  font-family: 'Lora', Georgia, serif;
+  font-weight: 400;
   color: var(--color-text);
   background: #f5f0f7;
   min-height: 100dvh;
@@ -44,8 +44,8 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font-heading);
-  font-weight: 400;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 300;
   line-height: 1.2;
 }
 
@@ -55,7 +55,7 @@ a {
 }
 
 button {
-  font-family: var(--font-body);
+  font-family: 'Lora', Georgia, serif;
   font-weight: 400;
   cursor: pointer;
   border: none;
@@ -65,8 +65,8 @@ button {
 input,
 select,
 textarea {
-  font-family: var(--font-body);
-  font-weight: 300;
+  font-family: 'Lora', Georgia, serif;
+  font-weight: 400;
 }
 
 img {

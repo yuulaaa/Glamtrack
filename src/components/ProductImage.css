@@ -1,5 +1,5 @@
 .product-image {
-  border-radius: var(--radius);
+  border-radius: 12px;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -18,6 +18,7 @@
 .product-image--md {
   width: 72px;
   height: 72px;
+  border-radius: 12px;
 }
 
 .product-image--lg {
@@ -33,7 +34,8 @@
 }
 
 .product-image--placeholder span {
-  font-size: 1.75rem;
+  font-size: 2rem;
+  line-height: 1;
 }
 
 .product-image--lg.product-image--placeholder span {

@@ -10,3 +10,34 @@
   flex-direction: column;
   gap: 12px;
 }
+
+/* Editorial header overrides for the dashboard only */
+.dashboard .page-header {
+  margin-bottom: 28px;
+}
+
+.dashboard .page-header h1 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 36px;
+  font-weight: 300;
+  color: #1a1a1a;
+  letter-spacing: 0.01em;
+}
+
+.dashboard .page-header p {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #888888;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+.dashboard .page-header::after {
+  content: '';
+  display: block;
+  height: 1px;
+  background: #e8e0f0;
+  margin-top: 14px;
+}

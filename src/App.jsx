@@ -10,6 +10,12 @@ function ProductDetailRoute({ products, onUpdate, onDelete }) {
   return <ProductDetail product={product} onUpdate={onUpdate} onDelete={onDelete} />;
 }
 
+function EditProductRoute({ products, onUpdate }) {
+  const { id } = useParams();
+  const product = products.find((p) => p.id === id);
+  return <AddProduct product={product} onUpdate={onUpdate} />;
+}
+
 function AppRoutes() {
   const { products, addProduct, updateProduct, deleteProduct } = useProducts();
 
@@ -26,6 +32,10 @@ function AppRoutes() {
             onDelete={deleteProduct}
           />
         }
+      />
+      <Route
+        path="/product/:id/edit"
+        element={<EditProductRoute products={products} onUpdate={updateProduct} />}
       />
     </Routes>
   );

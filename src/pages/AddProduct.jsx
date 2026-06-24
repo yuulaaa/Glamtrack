@@ -3,28 +3,77 @@ import { useNavigate, Link } from 'react-router-dom';
 import { generateId, CATEGORIES, STATUSES } from '../utils/constants';
 import './AddProduct.css';
 
-const today = () => new Date().toISOString().split('T')[0];
+const todayStr = () => new Date().toISOString().split('T')[0];
 
-export default function AddProduct({ onAdd }) {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({
-    name: '',
-    brand: '',
-    category: 'Skincare',
-    status: 'Unopened',
-    purchaseDate: today(),
-    openedDate: '',
-    expiryDate: '',
-    paoMonths: '',
-    notes: '',
-    imageBase64: '',
+function compressImage(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 800;
+        let { width, height } = img;
+        if (width > MAX || height > MAX) {
+          if (width >= height) {
+            height = Math.round((height * MAX) / width);
+            width = MAX;
+          } else {
+            width = Math.round((width * MAX) / height);
+            height = MAX;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
   });
+}
+
+function buildInitialForm(product) {
+  if (!product) {
+    return {
+      name: '',
+      brand: '',
+      category: 'Skincare',
+      status: 'Unopened',
+      purchaseDate: todayStr(),
+      openedDate: '',
+      expiryDate: '',
+      paoMonths: '',
+      notes: '',
+      imageBase64: '',
+    };
+  }
+  return {
+    name: product.name ?? '',
+    brand: product.brand ?? '',
+    category: product.category ?? 'Skincare',
+    status: product.status ?? 'Unopened',
+    purchaseDate: product.purchaseDate ?? todayStr(),
+    openedDate: product.openedDate ?? '',
+    expiryDate: product.expiryDate ?? '',
+    paoMonths: product.paoMonths != null ? String(product.paoMonths) : '',
+    notes: product.notes ?? '',
+    imageBase64: product.imageBase64 ?? '',
+  };
+}
+
+export default function AddProduct({ onAdd, product, onUpdate }) {
+  const isEditing = Boolean(product);
+  const navigate = useNavigate();
+  const [form, setForm] = useState(() => buildInitialForm(product));
+  const [compressing, setCompressing] = useState(false);
 
   const update = (field, value) => {
     setForm((prev) => {
       const next = { ...prev, [field]: value };
       if (field === 'status' && value === 'In Use' && !prev.openedDate) {
-        next.openedDate = today();
+        next.openedDate = todayStr();
       }
       if (field === 'status' && value === 'Unopened') {
         next.openedDate = '';
@@ -33,44 +82,53 @@ export default function AddProduct({ onAdd }) {
     });
   };
 
-  const handleImage = (e) => {
+  const handleImage = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => update('imageBase64', reader.result);
-    reader.readAsDataURL(file);
+    setCompressing(true);
+    try {
+      const compressed = await compressImage(file);
+      update('imageBase64', compressed);
+    } finally {
+      setCompressing(false);
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.name.trim()) return;
 
-    onAdd({
-      id: generateId(),
+    const payload = {
       name: form.name.trim(),
       brand: form.brand.trim(),
       category: form.category,
       status: form.status,
       purchaseDate: form.purchaseDate || null,
-      openedDate: form.status === 'In Use' ? form.openedDate || today() : null,
+      openedDate: form.status === 'In Use' ? form.openedDate || todayStr() : null,
       expiryDate: form.expiryDate || null,
       paoMonths: form.paoMonths ? Number(form.paoMonths) : null,
       notes: form.notes.trim(),
       imageBase64: form.imageBase64 || null,
-    });
+    };
 
-    navigate('/');
+    if (isEditing) {
+      onUpdate(product.id, payload);
+      navigate(`/product/${product.id}`);
+    } else {
+      onAdd({ id: generateId(), ...payload });
+      navigate('/');
+    }
   };
 
   return (
     <div className="page add-product">
-      <Link to="/" className="back-link">
+      <Link to={isEditing ? `/product/${product.id}` : '/'} className="back-link">
         ← Back
       </Link>
 
       <header className="page-header">
-        <h1>Add Product</h1>
-        <p>Track a new beauty item</p>
+        <h1>{isEditing ? 'Edit Product' : 'Add Product'}</h1>
+        <p>{isEditing ? 'Update your product details' : 'Track a new beauty item'}</p>
       </header>
 
       <form onSubmit={handleSubmit} className="add-product__form">
@@ -176,7 +234,12 @@ export default function AddProduct({ onAdd }) {
         <div className="form-group">
           <label>Photo (optional)</label>
           <div className="image-upload">
-            {form.imageBase64 ? (
+            {compressing ? (
+              <div className="image-upload__compressing">
+                <span className="image-upload__spinner" />
+                Compressing…
+              </div>
+            ) : form.imageBase64 ? (
               <div className="image-upload__preview">
                 <img src={form.imageBase64} alt="Preview" />
                 <button
@@ -196,8 +259,12 @@ export default function AddProduct({ onAdd }) {
           </div>
         </div>
 
-        <button type="submit" className="btn btn-primary btn-block" disabled={!form.name.trim()}>
-          Save Product
+        <button
+          type="submit"
+          className="btn btn-primary btn-block"
+          disabled={!form.name.trim() || compressing}
+        >
+          {isEditing ? 'Update Product' : 'Save Product'}
         </button>
       </form>
     </div>

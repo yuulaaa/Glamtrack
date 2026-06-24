@@ -126,6 +126,12 @@ export default function ProductDetail({ product, onUpdate, onDelete }) {
       </div>
 
       <div className="product-detail__actions">
+        <button
+          className="btn btn-primary btn-block"
+          onClick={() => navigate(`/product/${product.id}/edit`)}
+        >
+          Edit Product
+        </button>
         {product.status !== 'Finished' && (
           <button className="btn btn-outline btn-block" onClick={handleMarkFinished}>
             Mark as Finished
