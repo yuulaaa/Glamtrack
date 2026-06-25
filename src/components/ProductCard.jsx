@@ -18,6 +18,9 @@ export default function ProductCard({ product }) {
           {daysLeft !== null && product.status !== 'Finished' && (
             <ExpiryBadge product={product} />
           )}
+          {product.subcategory && (
+            <span className="product-card__subcategory">{product.subcategory}</span>
+          )}
         </div>
       </div>
     </Link>

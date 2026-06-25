@@ -97,6 +97,12 @@ export default function ProductDetail({ product, onUpdate, onDelete }) {
           <span className="info-row__label">Status</span>
           <span className="info-row__value">{product.status}</span>
         </div>
+        {product.subcategory && (
+          <div className="info-row">
+            <span className="info-row__label">Type</span>
+            <span className="info-row__value">{product.subcategory}</span>
+          </div>
+        )}
         <div className="info-row">
           <span className="info-row__label">Purchase Date</span>
           <span className="info-row__value">{formatDate(product.purchaseDate)}</span>

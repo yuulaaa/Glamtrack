@@ -65,6 +65,13 @@
   padding-bottom: 24px;
 }
 
+.image-upload__warning {
+  margin-top: 8px;
+  font-size: 0.8125rem;
+  color: #d4651a;
+  line-height: 1.5;
+}
+
 .image-upload__compressing {
   display: flex;
   align-items: center;

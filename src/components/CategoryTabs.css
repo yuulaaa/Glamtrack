@@ -1,9 +1,21 @@
+.filter-bar {
+  margin-bottom: 8px;
+}
+
+.filter-bar__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
 .category-tabs {
+  flex: 1;
+  min-width: 0;
   display: flex;
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 4px;
-  margin-bottom: 20px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -16,10 +28,11 @@
   flex-shrink: 0;
   padding: 8px 16px;
   border-radius: 20px;
+  font-family: 'Lora', Georgia, serif;
   font-size: 0.8125rem;
   color: var(--color-text-muted);
   background: #f8f4fa;
-  transition: all 0.2s;
+  transition: all 0.18s;
 }
 
 .category-tabs__tab--active {
@@ -29,4 +42,44 @@
 
 .category-tabs__tab:hover:not(.category-tabs__tab--active) {
   background: #efe6f4;
+}
+
+/* Sort button — sits right of the scrollable tabs */
+.sort-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f8f4fa;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+}
+
+.sort-btn:hover {
+  background: #efe6f4;
+  color: var(--color-primary);
+}
+
+/* Active sort label — appears below the tab row */
+.sort-label {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.75rem;
+  color: #aaa;
+  padding: 2px 0 10px;
+  transition: color 0.15s;
+}
+
+.sort-label strong {
+  color: var(--color-primary);
+  font-weight: 400;
+}
+
+.sort-label:hover {
+  color: var(--color-primary);
 }

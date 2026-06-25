@@ -1,35 +1,85 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { generateId, CATEGORIES, STATUSES } from '../utils/constants';
+import { generateId, CATEGORIES, STATUSES, SUBCATEGORIES } from '../utils/constants';
 import './AddProduct.css';
 
 const todayStr = () => new Date().toISOString().split('T')[0];
 
-function compressImage(file) {
-  return new Promise((resolve) => {
+// Read a File as a data URL, properly rejecting on error.
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Could not read file.'));
+    reader.onload = (e) => resolve(e.target.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+// Compress an image file to ≤800×800 JPEG at 0.7 quality using <canvas>.
+// Properly rejects so callers can fall back gracefully.
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onerror = () => reject(new Error('FileReader failed.'));
+
     reader.onload = (e) => {
       const img = new Image();
+
+      img.onerror = () => reject(new Error('Image failed to decode.'));
+
       img.onload = () => {
-        const MAX = 800;
-        let { width, height } = img;
-        if (width > MAX || height > MAX) {
-          if (width >= height) {
-            height = Math.round((height * MAX) / width);
-            width = MAX;
-          } else {
-            width = Math.round((width * MAX) / height);
-            height = MAX;
+        try {
+          const MAX = 800;
+          let { width, height } = img;
+
+          // Guard against zero/NaN dimensions (seen on some iOS HEIC files)
+          if (!width || !height) {
+            reject(new Error('Invalid image dimensions.'));
+            return;
           }
+
+          if (width > MAX || height > MAX) {
+            if (width >= height) {
+              height = Math.round((height * MAX) / width);
+              width = MAX;
+            } else {
+              width = Math.round((width * MAX) / height);
+              height = MAX;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          // getContext returns null on iOS when memory limit is hit
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Canvas context unavailable (memory limit).'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+
+          // An empty canvas or failed export returns 'data:,'
+          if (!dataUrl || dataUrl === 'data:,') {
+            reject(new Error('Canvas export failed.'));
+            return;
+          }
+
+          resolve(dataUrl);
+        } catch (err) {
+          reject(err);
         }
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.7));
       };
+
+      // Setting src after attaching handlers
       img.src = e.target.result;
     };
+
     reader.readAsDataURL(file);
   });
 }
@@ -40,6 +90,7 @@ function buildInitialForm(product) {
       name: '',
       brand: '',
       category: 'Skincare',
+      subcategory: '',
       status: 'Unopened',
       purchaseDate: todayStr(),
       openedDate: '',
@@ -53,6 +104,7 @@ function buildInitialForm(product) {
     name: product.name ?? '',
     brand: product.brand ?? '',
     category: product.category ?? 'Skincare',
+    subcategory: product.subcategory ?? '',
     status: product.status ?? 'Unopened',
     purchaseDate: product.purchaseDate ?? todayStr(),
     openedDate: product.openedDate ?? '',
@@ -68,6 +120,7 @@ export default function AddProduct({ onAdd, product, onUpdate }) {
   const navigate = useNavigate();
   const [form, setForm] = useState(() => buildInitialForm(product));
   const [compressing, setCompressing] = useState(false);
+  const [imageWarning, setImageWarning] = useState('');
 
   const update = (field, value) => {
     setForm((prev) => {
@@ -78,6 +131,10 @@ export default function AddProduct({ onAdd, product, onUpdate }) {
       if (field === 'status' && value === 'Unopened') {
         next.openedDate = '';
       }
+      // Reset subcategory when category changes
+      if (field === 'category') {
+        next.subcategory = '';
+      }
       return next;
     });
   };
@@ -85,10 +142,27 @@ export default function AddProduct({ onAdd, product, onUpdate }) {
   const handleImage = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    // Reset so the same file can be re-picked after an error
+    e.target.value = '';
+
     setCompressing(true);
+    setImageWarning('');
+
     try {
       const compressed = await compressImage(file);
       update('imageBase64', compressed);
+    } catch (compressionErr) {
+      console.warn('[GlamTrack] Compression failed, using original:', compressionErr.message);
+      // Fall back to the raw file — may be large but won't crash
+      try {
+        const raw = await readFileAsDataURL(file);
+        update('imageBase64', raw);
+        setImageWarning('Photo saved without compression. Large images may slow the app.');
+      } catch (readErr) {
+        console.error('[GlamTrack] FileReader fallback also failed:', readErr.message);
+        setImageWarning('Could not load this photo. Please try a different image.');
+      }
     } finally {
       setCompressing(false);
     }
@@ -102,6 +176,7 @@ export default function AddProduct({ onAdd, product, onUpdate }) {
       name: form.name.trim(),
       brand: form.brand.trim(),
       category: form.category,
+      subcategory: form.subcategory || null,
       status: form.status,
       purchaseDate: form.purchaseDate || null,
       openedDate: form.status === 'In Use' ? form.openedDate || todayStr() : null,
@@ -169,6 +244,22 @@ export default function AddProduct({ onAdd, product, onUpdate }) {
             ))}
           </select>
         </div>
+
+        {SUBCATEGORIES[form.category]?.length > 0 && (
+          <div className="form-group">
+            <label htmlFor="subcategory">Type / Subcategory</label>
+            <select
+              id="subcategory"
+              value={form.subcategory}
+              onChange={(e) => update('subcategory', e.target.value)}
+            >
+              <option value="">— Select type (optional) —</option>
+              {SUBCATEGORIES[form.category].map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className="form-group">
           <label>Status</label>
@@ -245,7 +336,7 @@ export default function AddProduct({ onAdd, product, onUpdate }) {
                 <button
                   type="button"
                   className="image-upload__remove"
-                  onClick={() => update('imageBase64', '')}
+                  onClick={() => { update('imageBase64', ''); setImageWarning(''); }}
                 >
                   Remove
                 </button>
@@ -253,10 +344,13 @@ export default function AddProduct({ onAdd, product, onUpdate }) {
             ) : (
               <label className="image-upload__dropzone">
                 <span>📷 Tap to upload</span>
-                <input type="file" accept="image/*" onChange={handleImage} hidden />
+                <input type="file" accept="image/*" capture="environment" onChange={handleImage} hidden />
               </label>
             )}
           </div>
+          {imageWarning && (
+            <p className="image-upload__warning">{imageWarning}</p>
+          )}
         </div>
 
         <button

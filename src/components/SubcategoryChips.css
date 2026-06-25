@@ -1,0 +1,50 @@
+.subcategory-chips {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 14px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.subcategory-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.subcat-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1.5px solid #e0d8ea;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+
+.subcat-chip--active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.subcat-chip:hover:not(.subcat-chip--active) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.subcat-chip__count {
+  font-size: 0.6875rem;
+  opacity: 0.75;
+}
+
+.subcat-chip--active .subcat-chip__count {
+  opacity: 0.85;
+}

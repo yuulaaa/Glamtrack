@@ -1,0 +1,124 @@
+.sort-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.sort-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(26, 26, 26, 0.45);
+  animation: backdrop-in 0.2s ease-out;
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.sort-sheet__panel {
+  position: relative;
+  width: 100%;
+  max-width: var(--max-width);
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  padding: 12px 20px 48px;
+  z-index: 1;
+  animation: panel-up 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes panel-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.sort-sheet__handle {
+  width: 36px;
+  height: 4px;
+  background: #e0d8ea;
+  border-radius: 2px;
+  margin: 0 auto 18px;
+}
+
+.sort-sheet__title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 300;
+  font-size: 1.375rem;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+  letter-spacing: 0.01em;
+}
+
+.sort-sheet__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sort-option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: transparent;
+  transition: background 0.15s;
+  text-align: left;
+}
+
+.sort-option:hover,
+.sort-option--active {
+  background: #f8f4fa;
+}
+
+.sort-option__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.sort-option__label {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: #1a1a1a;
+}
+
+.sort-option--active .sort-option__label {
+  color: var(--color-primary);
+}
+
+.sort-option__desc {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #aaa;
+}
+
+.sort-option__radio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+}
+
+.sort-option--active .sort-option__radio {
+  border-color: var(--color-primary);
+}
+
+.sort-option__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
