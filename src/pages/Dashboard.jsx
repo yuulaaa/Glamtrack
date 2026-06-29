@@ -9,13 +9,23 @@ import { CATEGORY_TABS, SUBCATEGORIES, SORT_OPTIONS } from '../utils/constants';
 import { isExpiringSoon } from '../utils/expiry';
 import { sortProducts } from '../utils/sort';
 import { useSort } from '../hooks/useSort';
+import { useViewMode } from '../hooks/useViewMode';
 import './Dashboard.css';
 
-export default function Dashboard({ products }) {
+export default function Dashboard({
+  products,
+  productsLoading = false,
+  syncError = null,
+  onDismissSyncError,
+  user = null,
+  onSignOut = null,
+  onEnableSync = null,
+}) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeSubcategory, setActiveSubcategory] = useState('All');
   const [sortSheetOpen, setSortSheetOpen] = useState(false);
   const [sortBy, setSortBy] = useSort();
+  const [view, setView] = useViewMode();
 
   const handleCategoryChange = (cat) => {
     setActiveCategory(cat);
@@ -37,7 +47,6 @@ export default function Dashboard({ products }) {
     [activeProducts]
   );
 
-  // Products matching the selected main category
   const categoryFiltered = useMemo(
     () =>
       activeCategory === 'All'
@@ -46,18 +55,14 @@ export default function Dashboard({ products }) {
     [activeProducts, activeCategory]
   );
 
-  // Subcategory count map — always computed from categoryFiltered
   const subcatCounts = useMemo(() => {
     const counts = {};
     categoryFiltered.forEach((p) => {
-      if (p.subcategory) {
-        counts[p.subcategory] = (counts[p.subcategory] || 0) + 1;
-      }
+      if (p.subcategory) counts[p.subcategory] = (counts[p.subcategory] || 0) + 1;
     });
     return counts;
   }, [categoryFiltered]);
 
-  // Products after both category + subcategory filters, then sorted
   const displayedProducts = useMemo(() => {
     const list =
       activeSubcategory === 'All'
@@ -67,15 +72,57 @@ export default function Dashboard({ products }) {
   }, [categoryFiltered, activeSubcategory, sortBy]);
 
   const currentSortOption = SORT_OPTIONS.find((o) => o.value === sortBy);
-  const showSortLabel = sortBy !== 'expiring-soon'; // hide label when on default
+  const showSortLabel = sortBy !== 'expiring-soon';
   const subcats = activeCategory !== 'All' ? (SUBCATEGORIES[activeCategory] ?? []) : [];
+
+  const avatarUrl = user?.user_metadata?.avatar_url;
+  const userName = user?.user_metadata?.full_name || user?.email || '';
 
   return (
     <div className="page dashboard">
-      <header className="page-header">
-        <h1>GlamTrack</h1>
-        <p>Your beauty collection</p>
+      <header className="page-header dashboard-header">
+        <div className="dashboard-header__left">
+          <h1>GlamTrack</h1>
+          <p>Your beauty collection</p>
+        </div>
+
+        <div className="dashboard-header__right">
+          {user ? (
+            <>
+              {avatarUrl && (
+                <img
+                  src={avatarUrl}
+                  alt={userName}
+                  className="dashboard-avatar"
+                  referrerPolicy="no-referrer"
+                  title={userName}
+                />
+              )}
+              {onSignOut && (
+                <button className="dashboard-signout" onClick={onSignOut} title="Sign out">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M6 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M11 11l3-3-3-3M14 8H6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+              )}
+            </>
+          ) : onEnableSync ? (
+            <button className="dashboard-sync-btn" onClick={onEnableSync}>
+              ☁ Sync
+            </button>
+          ) : null}
+        </div>
       </header>
+
+      {syncError && (
+        <div className="sync-error-banner">
+          <span>⚠️ {syncError}</span>
+          {onDismissSyncError && (
+            <button className="sync-error-banner__close" onClick={onDismissSyncError}>✕</button>
+          )}
+        </div>
+      )}
 
       <div className="dashboard__stats">
         <StatCard label="Total"    value={stats.total} />
@@ -90,6 +137,8 @@ export default function Dashboard({ products }) {
         onChange={handleCategoryChange}
         onSortOpen={() => setSortSheetOpen(true)}
         sortLabel={showSortLabel ? currentSortOption?.label : null}
+        view={view}
+        onViewChange={setView}
       />
 
       {subcats.length > 0 && (
@@ -101,7 +150,12 @@ export default function Dashboard({ products }) {
         />
       )}
 
-      {displayedProducts.length === 0 ? (
+      {productsLoading ? (
+        <div className="products-loading">
+          <span className="products-loading__spinner" />
+          <p>Syncing your collection…</p>
+        </div>
+      ) : displayedProducts.length === 0 ? (
         <div className="empty-state">
           <span>✨</span>
           <p>
@@ -111,9 +165,9 @@ export default function Dashboard({ products }) {
           </p>
         </div>
       ) : (
-        <div className="dashboard__list">
+        <div className={view === 'grid' ? 'dashboard__grid' : 'dashboard__list'}>
           {displayedProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} view={view} />
           ))}
         </div>
       )}

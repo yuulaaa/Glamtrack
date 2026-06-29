@@ -4,8 +4,30 @@ import StatusBadge, { ExpiryBadge } from './StatusBadge';
 import { getDaysLeft } from '../utils/expiry';
 import './ProductCard.css';
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, view = 'list' }) {
   const daysLeft = getDaysLeft(product);
+
+  if (view === 'grid') {
+    return (
+      <Link to={`/product/${product.id}`} className="product-card product-card--grid">
+        <div className="product-card__grid-img">
+          <ProductImage product={product} size="grid" />
+        </div>
+        <div className="product-card__grid-body">
+          <p className="product-card__grid-name">{product.name}</p>
+          {product.brand && (
+            <p className="product-card__grid-brand">{product.brand}</p>
+          )}
+          <div className="product-card__grid-meta">
+            <StatusBadge status={product.status} />
+            {daysLeft !== null && product.status !== 'Finished' && (
+              <ExpiryBadge product={product} />
+            )}
+          </div>
+        </div>
+      </Link>
+    );
+  }
 
   return (
     <Link to={`/product/${product.id}`} className="product-card">

@@ -230,3 +230,28 @@ img {
 .empty-state p {
   font-size: 0.9375rem;
 }
+
+/* ─── Global keyframes ──────────────────────────────────────────────────── */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-fade {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ─── Full-screen loading (auth check) ─────────────────────────────────── */
+
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+}
+
+.loading-screen__icon {
+  font-size: 2.5rem;
+  animation: pulse-fade 1.4s ease-in-out infinite;
+}
